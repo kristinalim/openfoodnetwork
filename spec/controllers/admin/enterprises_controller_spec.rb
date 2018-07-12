@@ -290,6 +290,64 @@ module Admin
       end
     end
 
+    describe "removing logo of an enterprise" do
+      image_path = File.open(Rails.root.join('app', 'assets', 'images', 'logo-black.png'))
+      let(:image) { Rack::Test::UploadedFile.new(image_path, 'image/png') }
+
+      let!(:profile_enterprise) { create(:enterprise, sells: 'none', logo: image) }
+
+      before do
+        controller.stub spree_current_user: current_user
+      end
+
+      context "as manager" do
+        let(:current_user) do
+          profile_enterprise.enterprise_roles.create!(user: distributor_manager)
+          distributor_manager
+        end
+
+        it "removes logo" do
+          expect(profile_enterprise.logo?).to be true
+
+          spree_delete :remove_logo, id: profile_enterprise, format: :json
+
+          expect(response).to be_success
+          expect(json_response["id"]).to eq profile_enterprise.id
+          profile_enterprise.reload
+          expect(profile_enterprise.logo?).to be false
+        end
+
+        context "when logo does not exist" do
+          let!(:profile_enterprise) { create(:enterprise, sells: 'none', logo: nil) }
+
+          it "responds with error" do
+            spree_delete :remove_logo, id: profile_enterprise, format: :json
+
+            expect(response.status).to eq(409)
+            expect(json_response['error']).to eq I18n.t('admin.enterprises.remove_logo.logo_does_not_exist')
+          end
+        end
+      end
+
+      context "as owner" do
+        let(:current_user) { profile_enterprise.owner }
+
+        it "allows removal of logo" do
+          spree_delete :remove_logo, id: profile_enterprise, format: :json
+          expect(response).to be_success
+        end
+      end
+
+      context "as super admin" do
+        let(:current_user) { admin_user }
+
+        it "allows removal of logo" do
+          spree_delete :remove_logo, id: profile_enterprise, format: :json
+          expect(response).to be_success
+        end
+      end
+    end
+
     describe "register" do
       let(:enterprise) { create(:enterprise, sells: 'none') }
 

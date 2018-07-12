@@ -820,6 +820,8 @@ en:
       new:
         title: New Enterprise
         back_link: Back to enterprises list
+      remove_logo:
+        logo_does_not_exist: "Logo does not exist"
       welcome:
         welcome_title: Welcome to the Open Food Network!
         welcome_text: You have successfully created a

@@ -7,7 +7,7 @@ module Admin
     prepend_before_filter :override_sells, only: :create
 
     before_filter :load_enterprise_set, :only => :index
-    before_filter :load_countries, :except => [:index, :register, :check_permalink]
+    before_filter :load_countries, :except => [:index, :remove_logo, :remove_promo_image, :register, :check_permalink]
     before_filter :load_methods_and_fees, :only => [:edit, :update]
     before_filter :load_groups, :only => [:new, :edit, :update, :create]
     before_filter :load_taxons, :only => [:new, :edit, :update, :create]
@@ -53,6 +53,16 @@ module Admin
         respond_with(@object) do |format|
           format.json { render json: { errors: @object.errors.messages }, status: :unprocessable_entity }
         end
+      end
+    end
+
+    def remove_logo
+      return respond_with_conflict(t('admin.enterprises.remove_logo.logo_does_not_exist')) unless @object.logo?
+
+      @object.update_attributes!(logo: nil)
+
+      respond_to do |format|
+        format.json { render_as_json @object, ams_prefix: params[:ams_prefix], spree_current_user: spree_current_user }
       end
     end
 
@@ -255,6 +265,14 @@ module Admin
     def check_can_change_managers
       unless ( spree_current_user == @enterprise.owner ) || spree_current_user.admin?
         params[:enterprise].delete :user_ids
+      end
+    end
+
+    def respond_with_conflict(error_message)
+      respond_to do |format|
+        format.json do
+          render json: { error: error_message }, status: :conflict
+        end
       end
     end
 
