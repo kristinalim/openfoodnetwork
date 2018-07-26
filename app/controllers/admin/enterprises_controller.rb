@@ -59,11 +59,13 @@ module Admin
     def remove_logo
       return respond_with_conflict(t('admin.enterprises.remove_logo.logo_does_not_exist')) unless @object.logo?
 
-      @object.update_attributes!(logo: nil)
+      remove_attachment(@object, :logo)
+    end
 
-      respond_to do |format|
-        format.json { render_as_json @object, ams_prefix: params[:ams_prefix], spree_current_user: spree_current_user }
-      end
+    def remove_promo_image
+      return respond_with_conflict(t('admin.enterprises.remove_promo_image.promo_image_does_not_exist')) unless @object.promo_image?
+
+      remove_attachment(@object, :promo_image)
     end
 
     def register
@@ -265,6 +267,14 @@ module Admin
     def check_can_change_managers
       unless ( spree_current_user == @enterprise.owner ) || spree_current_user.admin?
         params[:enterprise].delete :user_ids
+      end
+    end
+
+    def remove_attachment(object, attachment_name)
+      object.update_attributes!(attachment_name => nil)
+
+      respond_to do |format|
+        format.json { render_as_json object, ams_prefix: params[:ams_prefix], spree_current_user: spree_current_user }
       end
     end
 

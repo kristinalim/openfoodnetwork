@@ -106,6 +106,7 @@ Openfoodnetwork::Application.routes.draw do
         get :welcome
         put :register
         delete :remove_logo
+        delete :remove_promo_image
       end
 
       resources :producer_properties do
