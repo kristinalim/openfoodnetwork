@@ -417,16 +417,71 @@ feature %q{
       end
     end
 
-    scenario "editing images for an enterprise" do
-      click_link 'Enterprises'
-      within("tbody#e_#{distributor1.id}") { click_link 'Manage' }
-
-      within(".side_menu") do
-        click_link "Images"
+    describe "images for an enterprise", js: true do
+      def go_to_images
+        within(".side_menu") do
+          click_link "Images"
+        end
       end
 
-      page.should have_content "LOGO"
-      page.should have_content "PROMO"
+      before do
+        click_link "Enterprises"
+        within("tbody#e_#{distributor1.id}") { click_link "Manage" }
+
+        go_to_images
+      end
+
+      scenario "editing logo" do
+        # Adding image
+        attach_file "enterprise[logo]", File.join(Rails.root, "app/assets/images/logo-white.png")
+        click_button "Update"
+
+        expect(page).to have_content("Enterprise \"#{distributor1.name}\" has been successfully updated!")
+
+        go_to_images
+        within ".page-admin-enterprises-form__logo-field-group" do
+          expect(page).to have_selector(".image-field-group__preview-image")
+          expect(html).to include("logo-white.png")
+        end
+
+        # Replacing image
+        attach_file "enterprise[logo]", File.join(Rails.root, "app/assets/images/logo-black.png")
+        click_button "Update"
+
+        expect(page).to have_content("Enterprise \"#{distributor1.name}\" has been successfully updated!")
+
+        go_to_images
+        within ".page-admin-enterprises-form__logo-field-group" do
+          expect(page).to have_selector(".image-field-group__preview-image")
+          expect(html).to include("logo-black.png")
+        end
+      end
+
+      scenario "editing promo image" do
+        # Adding image
+        attach_file "enterprise[promo_image]", File.join(Rails.root, "app/assets/images/logo-white.png")
+        click_button "Update"
+
+        expect(page).to have_content("Enterprise \"#{distributor1.name}\" has been successfully updated!")
+
+        go_to_images
+        within ".page-admin-enterprises-form__promo-image-field-group" do
+          expect(page).to have_selector(".image-field-group__preview-image")
+          expect(html).to include("logo-white.jpg")
+        end
+
+        # Replacing image
+        attach_file "enterprise[promo_image]", File.join(Rails.root, "app/assets/images/logo-black.png")
+        click_button "Update"
+
+        expect(page).to have_content("Enterprise \"#{distributor1.name}\" has been successfully updated!")
+
+        go_to_images
+        within ".page-admin-enterprises-form__promo-image-field-group" do
+          expect(page).to have_selector(".image-field-group__preview-image")
+          expect(html).to include("logo-black.jpg")
+        end
+      end
     end
 
     scenario "managing producer properties" do
