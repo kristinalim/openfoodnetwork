@@ -38,3 +38,23 @@ angular.module("admin.resources").factory 'Enterprises', ($q, EnterpriseResource
 
     resetAttribute: (enterprise, attribute) ->
       enterprise[attribute] = @pristineByID[enterprise.id][attribute]
+
+    removeLogo: (enterprise) ->
+      deferred = $q.defer()
+      EnterpriseResource.removeLogo({id: enterprise.permalink}, ((data) =>
+        @pristineByID[enterprise.id] = angular.copy(data)
+        deferred.resolve(data)
+      ), ((response) ->
+        deferred.reject(response)
+      ))
+      deferred.promise
+
+    removePromoImage: (enterprise) ->
+      deferred = $q.defer()
+      EnterpriseResource.removePromoImage({id: enterprise.permalink}, ((data) =>
+        @pristineByID[enterprise.id] = angular.copy(data)
+        deferred.resolve(data)
+      ), ((response) ->
+        deferred.reject(response)
+      ))
+      deferred.promise
