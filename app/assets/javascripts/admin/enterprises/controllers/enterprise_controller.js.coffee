@@ -1,5 +1,5 @@
 angular.module("admin.enterprises")
-  .controller "enterpriseCtrl", ($scope, $http, $window, NavigationCheck, enterprise, EnterprisePaymentMethods, EnterpriseShippingMethods, SideMenu, StatusMessage) ->
+  .controller "enterpriseCtrl", ($scope, $http, $window, NavigationCheck, enterprise, Enterprises, EnterprisePaymentMethods, EnterpriseShippingMethods, SideMenu, StatusMessage) ->
     $scope.Enterprise = enterprise
     $scope.PaymentMethods = EnterprisePaymentMethods.paymentMethods
     $scope.ShippingMethods = EnterpriseShippingMethods.shippingMethods
@@ -20,6 +20,26 @@ angular.module("admin.enterprises")
 
     $scope.cancel = (destination) ->
       $window.location = destination
+
+    $scope.removeLogo = ->
+      Enterprises.removeLogo($scope.Enterprise).then (data) ->
+        $scope.Enterprise = angular.copy(data)
+        $scope.$emit('enterprise:updated', $scope.Enterprise)
+
+        StatusMessage.display('success', t('admin.enterprises.remove_logo.removed_logo_successfully'))
+      , (response) ->
+        if response.data.error?
+          StatusMessage.display('failure', response.data.error)
+
+    $scope.removePromoImage = ->
+      Enterprises.removePromoImage($scope.Enterprise).then (data) ->
+        $scope.Enterprise = angular.copy(data)
+        $scope.$emit('enterprise:updated', $scope.Enterprise)
+
+        StatusMessage.display('success', t('admin.enterprises.remove_promo_image.removed_promo_image_successfully'))
+      , (response) ->
+        if response.data.error?
+          StatusMessage.display('failure', response.data.error)
 
     $scope.submit = ->
       $scope.navClear()

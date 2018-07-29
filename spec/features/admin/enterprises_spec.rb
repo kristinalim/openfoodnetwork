@@ -455,6 +455,17 @@ feature %q{
           expect(page).to have_selector(".image-field-group__preview-image")
           expect(html).to include("logo-black.png")
         end
+
+        # Removing image
+        within ".page-admin-enterprises-form__logo-field-group" do
+          click_on "Remove Image"
+        end
+
+        expect(page).to have_content("Logo removed successfully")
+
+        within ".page-admin-enterprises-form__logo-field-group" do
+          expect(page).to have_no_selector(".image-field-group__preview-image")
+        end
       end
 
       scenario "editing promo image" do
@@ -480,6 +491,17 @@ feature %q{
         within ".page-admin-enterprises-form__promo-image-field-group" do
           expect(page).to have_selector(".image-field-group__preview-image")
           expect(html).to include("logo-black.jpg")
+        end
+
+        # Removing image
+        within ".page-admin-enterprises-form__promo-image-field-group" do
+          click_on "Remove Image"
+        end
+
+        expect(page).to have_content("Promo image removed successfully")
+
+        within ".page-admin-enterprises-form__promo-image-field-group" do
+          expect(page).to have_no_selector(".image-field-group__preview-image")
         end
       end
     end
