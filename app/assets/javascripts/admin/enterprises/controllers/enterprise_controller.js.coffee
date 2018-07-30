@@ -22,24 +22,26 @@ angular.module("admin.enterprises")
       $window.location = destination
 
     $scope.removeLogo = ->
-      Enterprises.removeLogo($scope.Enterprise).then (data) ->
-        $scope.Enterprise = angular.copy(data)
-        $scope.$emit('enterprise:updated', $scope.Enterprise)
+      if confirm(t('admin.enterprises.remove_logo.immediate_removal_warning'))
+        Enterprises.removeLogo($scope.Enterprise).then (data) ->
+          $scope.Enterprise = angular.copy(data)
+          $scope.$emit('enterprise:updated', $scope.Enterprise)
 
-        StatusMessage.display('success', t('admin.enterprises.remove_logo.removed_logo_successfully'))
-      , (response) ->
-        if response.data.error?
-          StatusMessage.display('failure', response.data.error)
+          StatusMessage.display('success', t('admin.enterprises.remove_logo.removed_logo_successfully'))
+        , (response) ->
+          if response.data.error?
+            StatusMessage.display('failure', response.data.error)
 
     $scope.removePromoImage = ->
-      Enterprises.removePromoImage($scope.Enterprise).then (data) ->
-        $scope.Enterprise = angular.copy(data)
-        $scope.$emit('enterprise:updated', $scope.Enterprise)
+      if confirm(t('admin.enterprises.remove_promo_image.immediate_removal_warning'))
+        Enterprises.removePromoImage($scope.Enterprise).then (data) ->
+          $scope.Enterprise = angular.copy(data)
+          $scope.$emit('enterprise:updated', $scope.Enterprise)
 
-        StatusMessage.display('success', t('admin.enterprises.remove_promo_image.removed_promo_image_successfully'))
-      , (response) ->
-        if response.data.error?
-          StatusMessage.display('failure', response.data.error)
+          StatusMessage.display('success', t('admin.enterprises.remove_promo_image.removed_promo_image_successfully'))
+        , (response) ->
+          if response.data.error?
+            StatusMessage.display('failure', response.data.error)
 
     $scope.submit = ->
       $scope.navClear()
