@@ -283,6 +283,40 @@ feature 'Subscriptions' do
         expect(subscription_line_item.variant).to eq variant2
         expect(subscription_line_item.quantity).to eq 3
       end
+
+      context "when the variant is in a past order cycle and there are no future order cycles" do
+        let!(:order_cycle) { create(:simple_order_cycle, coordinator: shop, orders_open_at: 7.days.ago, orders_close_at: 2.days.ago) }
+
+        it "does not allow creating the subscription including the variant" do
+          select2_select customer.email, from: "customer_id"
+          select2_select schedule.name, from: "schedule_id"
+          select2_select payment_method.name, from: "payment_method_id"
+          select2_select shipping_method.name, from: "shipping_method_id"
+
+          find_field("begins_at").click
+          within ".ui-datepicker-calendar" do
+            find(".ui-datepicker-today").click
+          end
+
+          click_button "Next"
+          expect(page).to have_content "BILLING ADDRESS"
+
+          click_button "Next"
+          expect(page).to have_content "NAME OR SKU"
+
+          # Add the product to the subscription
+          select2_search product1.name, from: I18n.t(:name_or_sku), dropdown_css: ".select2-drop"
+          fill_in "add_quantity", with: 2
+          click_link "Add"
+          expect(page).to have_selector "#subscription-line-items .item", count: 1
+
+          click_button "Next"
+
+          # Subscription cannot be saved
+          click_button "Create Subscription"
+          expect(page).to have_no_content "Saved"
+        end
+      end
     end
 
     context 'editing an existing subscription' do
