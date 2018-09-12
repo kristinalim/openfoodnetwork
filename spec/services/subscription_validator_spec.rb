@@ -463,4 +463,60 @@ describe SubscriptionValidator do
       end
     end
   end
+
+  describe "variant availability" do
+    let!(:shop) { create(:enterprise) }
+    let!(:order_cycle) { current_order_cycle }
+    let!(:schedule) { create(:schedule, order_cycles: [order_cycle]) }
+    let!(:subscription) { create(:subscription, shop: shop, schedule: schedule) }
+    let!(:subscription_line_item) { create(:subscription_line_item, subscription: subscription, variant: variant) }
+    let!(:product) { create(:product) }
+    let!(:variant) { product.variants.first }
+
+    let(:current_order_cycle) { create(:simple_order_cycle, coordinator: shop, orders_open_at: 1.week.ago, orders_close_at: 1.week.from_now) }
+    let(:future_order_cycle) { create(:simple_order_cycle, coordinator: shop, orders_open_at: 1.week.from_now, orders_close_at: 2.weeks.from_now) }
+    let(:past_order_cycle) { create(:simple_order_cycle, coordinator: shop, orders_open_at: 2.weeks.ago, orders_close_at: 1.week.ago) }
+
+    let(:validator) { SubscriptionValidator.new(subscription) }
+
+    context "if it is not in an exchange" do
+      it "is unavailable" do
+        expect(validator.send(:available_variant_ids)).to_not include(variant.id)
+      end
+    end
+
+    context "if it is only in an incoming exchange" do
+      let!(:incoming_exchange) { order_cycle.exchanges.create(sender: product.supplier, receiver: shop, incoming: true, variants: [variant]) }
+
+      it "is unavailable" do
+        expect(validator.send(:available_variant_ids)).to_not include(variant.id)
+      end
+    end
+
+    context "if is an outgoing exchange where the shop is the receiver" do
+      let!(:outgoing_exchange) { order_cycle.exchanges.create(sender: shop, receiver: shop, incoming: false, variants: [variant]) }
+
+      context "if the order cycle is currently open" do
+        it "is available" do
+          expect(validator.send(:available_variant_ids)).to include(variant.id)
+        end
+      end
+
+      context "if the order cycle opens in the future" do
+        let!(:order_cycle) { future_order_cycle }
+
+        it "is available" do
+          expect(validator.send(:available_variant_ids)).to include(variant.id)
+        end
+      end
+
+      context "if the order cycle closed in the past" do
+        let!(:order_cycle) { past_order_cycle }
+
+        it "is unavailable" do
+          expect(validator.send(:available_variant_ids)).to_not include(variant.id)
+        end
+      end
+    end
+  end
 end
