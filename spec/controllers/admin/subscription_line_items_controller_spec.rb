@@ -12,7 +12,6 @@ describe Admin::SubscriptionLineItemsController, type: :controller do
     let!(:variant) { create(:variant, product: product, unit_value: '100', price: 15.00, option_values: []) }
     let!(:enterprise_fee) { create(:enterprise_fee, amount: 3.50) }
     let!(:order_cycle) { create(:simple_order_cycle, coordinator: shop, orders_open_at: 2.days.from_now, orders_close_at: 7.days.from_now) }
-    let!(:outgoing_exchange) { order_cycle.exchanges.create(sender: shop, receiver: shop, variants: [variant], enterprise_fees: [enterprise_fee]) }
     let!(:schedule) { create(:schedule, order_cycles: [order_cycle]) }
     let(:unmanaged_schedule) { create(:schedule, order_cycles: [create(:simple_order_cycle, coordinator: unmanaged_shop)]) }
 

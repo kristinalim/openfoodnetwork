@@ -145,13 +145,21 @@ feature 'Subscriptions' do
       let!(:customer_user) { create(:user) }
       let!(:credit_card1) { create(:credit_card, user: customer_user, cc_type: 'visa', last_digits: 1111, month: 10, year: 2030) }
       let!(:customer) { create(:customer, enterprise: shop, bill_address: address, user: customer_user, allow_charges: true) }
-      let!(:product1) { create(:product, supplier: shop) }
-      let!(:product2) { create(:product, supplier: shop) }
-      let!(:variant1) { create(:variant, product: product1, unit_value: '100', price: 12.00, option_values: []) }
-      let!(:variant2) { create(:variant, product: product2, unit_value: '1000', price: 6.00, option_values: []) }
+      let!(:test_product) { create(:product, supplier: shop, distributors: []) }
+      let!(:test_variant) do
+        test_product.variants.first.tap do |variant|
+          variant.update_attributes!(unit_value: "100", price: 12.00, option_values: [])
+        end
+      end
+      let!(:shop_product) { create(:product, supplier: shop, distributors: [shop]) }
+      let!(:shop_variant) do
+        shop_product.variants.first.tap do |variant|
+          variant.update_attributes!(unit_value: "1000", price: 6.00, option_values: [])
+        end
+      end
       let!(:enterprise_fee) { create(:enterprise_fee, amount: 1.75) }
       let!(:order_cycle) { create(:simple_order_cycle, coordinator: shop, orders_open_at: 2.days.from_now, orders_close_at: 7.days.from_now) }
-      let!(:outgoing_exchange) { order_cycle.exchanges.create(sender: shop, receiver: shop, variants: [variant1, variant2], enterprise_fees: [enterprise_fee]) }
+      let!(:outgoing_exchange) { order_cycle.exchanges.create(sender: shop, receiver: shop, variants: [test_variant, shop_variant], enterprise_fees: [enterprise_fee]) }
       let!(:schedule) { create(:schedule, order_cycles: [order_cycle]) }
       let!(:payment_method) { create(:stripe_payment_method, name: 'Credit Card', distributors: [shop], preferred_enterprise_id: shop.id) }
       let!(:shipping_method) { create(:shipping_method, distributors: [shop]) }
@@ -217,11 +225,9 @@ feature 'Subscriptions' do
         expect(page).to have_content 'Please add at least one product'
 
         # Adding a product and getting a price estimate
-        select2_search product1.name, from: I18n.t(:name_or_sku), dropdown_css: '.select2-drop'
-        fill_in 'add_quantity', with: 2
-        click_link 'Add'
+        add_variant_to_subscription test_variant, 2
         within 'table#subscription-line-items tr.item', match: :first do
-          expect(page).to have_selector 'td.description', text: "#{product1.name} - #{variant1.full_name}"
+          expect(page).to have_selector 'td.description', text: "#{test_product.name} - #{test_variant.full_name}"
           expect(page).to have_selector 'td.price', text: "$13.75"
           expect(page).to have_input 'quantity', with: "2"
           expect(page).to have_selector 'td.total', text: "$27.50"
@@ -243,11 +249,9 @@ feature 'Subscriptions' do
         click_button('edit-products')
 
         # Adding a new product
-        select2_search product2.name, from: I18n.t(:name_or_sku), dropdown_css: '.select2-drop'
-        fill_in 'add_quantity', with: 3
-        click_link 'Add'
+        add_variant_to_subscription shop_variant, 3
         within 'table#subscription-line-items tr.item', match: :first do
-          expect(page).to have_selector 'td.description', text: "#{product2.name} - #{variant2.full_name}"
+          expect(page).to have_selector 'td.description', text: "#{shop_product.name} - #{shop_variant.full_name}"
           expect(page).to have_selector 'td.price', text: "$7.75"
           expect(page).to have_input 'quantity', with: "3"
           expect(page).to have_selector 'td.total', text: "$23.25"
@@ -262,7 +266,7 @@ feature 'Subscriptions' do
 
         # Prices are shown
         within 'table#subscription-line-items tr.item', match: :first do
-          expect(page).to have_selector 'td.description', text: "#{product2.name} - #{variant2.full_name}"
+          expect(page).to have_selector 'td.description', text: "#{shop_product.name} - #{shop_variant.full_name}"
           expect(page).to have_selector 'td.price', text: "$7.75"
           expect(page).to have_selector 'td.quantity', text: "3"
           expect(page).to have_selector 'td.total', text: "$23.25"
@@ -280,42 +284,8 @@ feature 'Subscriptions' do
         # Standing Line Items are created
         expect(subscription.subscription_line_items.count).to eq 1
         subscription_line_item = subscription.subscription_line_items.first
-        expect(subscription_line_item.variant).to eq variant2
+        expect(subscription_line_item.variant).to eq shop_variant
         expect(subscription_line_item.quantity).to eq 3
-      end
-
-      context "when the variant is in a past order cycle and there are no future order cycles" do
-        let!(:order_cycle) { create(:simple_order_cycle, coordinator: shop, orders_open_at: 7.days.ago, orders_close_at: 2.days.ago) }
-
-        it "does not allow creating the subscription including the variant" do
-          select2_select customer.email, from: "customer_id"
-          select2_select schedule.name, from: "schedule_id"
-          select2_select payment_method.name, from: "payment_method_id"
-          select2_select shipping_method.name, from: "shipping_method_id"
-
-          find_field("begins_at").click
-          within ".ui-datepicker-calendar" do
-            find(".ui-datepicker-today").click
-          end
-
-          click_button "Next"
-          expect(page).to have_content "BILLING ADDRESS"
-
-          click_button "Next"
-          expect(page).to have_content "NAME OR SKU"
-
-          # Add the product to the subscription
-          select2_search product1.name, from: I18n.t(:name_or_sku), dropdown_css: ".select2-drop"
-          fill_in "add_quantity", with: 2
-          click_link "Add"
-          expect(page).to have_selector "#subscription-line-items .item", count: 1
-
-          click_button "Next"
-
-          # Subscription cannot be saved
-          click_button "Create Subscription"
-          expect(page).to have_no_content "Saved"
-        end
       end
     end
 
@@ -407,9 +377,6 @@ feature 'Subscriptions' do
         # Total should be $29.75
         expect(page).to have_selector '#order_form_total', text: "$29.75"
 
-        click_button 'Save Changes'
-        expect(page).to have_content "#{product3.name} - #{variant3.full_name} is not available from the selected schedule"
-
         # Remove variant3 from the subscription
         within '#sli_1' do
           find("a.delete-item").click
@@ -447,5 +414,101 @@ feature 'Subscriptions' do
         end
       end
     end
+
+    describe "allowed variants" do
+      let!(:customer) { create(:customer, enterprise: shop, allow_charges: true) }
+      let!(:credit_card) { create(:credit_card, user: customer.user) }
+      let!(:shop_product) { create(:product, supplier: shop, distributors: [shop]) }
+      let!(:shop_variant) { shop_product.variants.first }
+      let!(:permitted_supplier) do
+        create(:supplier_enterprise).tap do |supplier|
+          create(:enterprise_relationship, child: shop, parent: supplier, permissions_list: [:add_to_order_cycle])
+        end
+      end
+      let!(:permitted_supplier_product) { create(:product, supplier: permitted_supplier, distributors: [shop]) }
+      let!(:permitted_supplier_variant) { permitted_supplier_product.variants.first }
+      let!(:incoming_exchange_product) { create(:product, distributors: [shop]) }
+      let!(:incoming_exchange_variant) do
+        incoming_exchange_product.variants.first.tap do |variant|
+          create(:exchange, incoming: true, receiver: shop, variants: [variant])
+        end
+      end
+      let!(:outgoing_exchange_product) { create(:product, distributors: [shop]) }
+      let!(:outgoing_exchange_variant) do
+        outgoing_exchange_product.variants.first.tap do |variant|
+          create(:exchange, incoming: false, receiver: shop, variants: [variant])
+        end
+      end
+      let!(:enterprise_fee) { create(:enterprise_fee, amount: 1.75) }
+      let!(:order_cycle) { create(:simple_order_cycle, coordinator: shop) }
+      let!(:schedule) { create(:schedule, order_cycles: [order_cycle]) }
+      let!(:payment_method) { create(:stripe_payment_method, distributors: [shop], preferred_enterprise_id: shop.id) }
+      let!(:shipping_method) { create(:shipping_method, distributors: [shop]) }
+
+      before do
+        visit admin_subscriptions_path
+        click_link "New Subscription"
+        select2_select shop.name, from: "new_subscription_shop_id"
+        click_button "Continue"
+      end
+
+      it "permit creating and editing of the subscription" do
+        select2_select customer.email, from: "customer_id"
+        select2_select schedule.name, from: "schedule_id"
+        select2_select payment_method.name, from: "payment_method_id"
+        select2_select shipping_method.name, from: "shipping_method_id"
+        find_field("begins_at").click
+        within(".ui-datepicker-calendar") do
+          find(".ui-datepicker-today").click
+        end
+        click_button "Next"
+
+        expect(page).to have_content "BILLING ADDRESS"
+        click_button "Next"
+
+        # Add products
+        expect(page).to have_content "NAME OR SKU"
+        add_variant_to_subscription shop_variant, 3
+        add_variant_to_subscription permitted_supplier_variant, 4
+        add_variant_to_subscription incoming_exchange_variant, 5
+        add_variant_to_subscription outgoing_exchange_variant, 6
+        click_button "Next"
+
+        # Submit form
+        expect {
+          click_button "Create Subscription"
+          expect(page).to have_content "Saved"
+        }.to change(Subscription, :count).by(1)
+
+        # Subscription line items are created
+        subscription = Subscription.last
+        expect(subscription.subscription_line_items.count).to eq 4
+        subscription_line_item = subscription.subscription_line_items.first
+
+        # Edit the subscription
+        visit edit_admin_subscription_path(subscription)
+
+        # Remove shop_variant from the subscription
+        click_button "edit-products"
+        within "#sli_0" do
+          expect(page).to have_selector ".description", text: shop_variant.name
+          find("a.delete-item").click
+        end
+
+        # Submit form
+        click_button "Save Changes"
+        expect(page).to have_content "Saved"
+
+        # Subscription is saved
+        expect(page).to have_selector "#subscription-line-items .item", count: 3
+        expect(subscription.subscription_line_items.count).to eq 3
+      end
+    end
+  end
+
+  def add_variant_to_subscription(variant, quantity)
+    select2_search variant.name, from: I18n.t(:name_or_sku), dropdown_css: ".select2-drop"
+    fill_in "add_quantity", with: quantity
+    click_link "Add"
   end
 end

@@ -22,6 +22,7 @@ angular.module("admin.utils").directive "variantAutocomplete", ($timeout) ->
               q: term
               distributor_id: scope.distributor_id
               order_cycle_id: scope.order_cycle_id
+              available_for_subscriptions: scope.available_for_subscriptions
             results: (data, page) ->
               results: data
           formatResult: (variant) ->
