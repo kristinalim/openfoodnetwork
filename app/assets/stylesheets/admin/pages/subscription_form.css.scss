@@ -1,0 +1,7 @@
+form[name=subscription_form] {
+  #subscription-line-items {
+    .available-in-open-and-upcoming-order-cycles-warning {
+      color: $warning-red;
+    }
+  }
+}
