@@ -190,6 +190,7 @@ FactoryBot.define do
   factory :variant_override, :class => VariantOverride do
     price         77.77
     count_on_hand 11111
+    on_demand     false
     default_stock 2000
     resettable  false
   end
