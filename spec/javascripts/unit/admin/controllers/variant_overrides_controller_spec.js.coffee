@@ -152,6 +152,30 @@ describe "VariantOverridesCtrl", ->
         dirtyVariantOverride = DirtyVariantOverrides.dirtyVariantOverrides[123][2]
         expect(dirtyVariantOverride.count_on_hand).toBe(20)
 
+  describe "disabling of count on hand field", ->
+    variant = {id: 2}
+
+    beforeEach ->
+      scope.variantOverrides = {123: {}}
+
+    describe "when on_demand is false", ->
+      it "is editable", ->
+        scope.variantOverrides[123][2] = {on_demand: false, count_on_hand: null}
+        disabled = scope.countOnHandDisabled(variant, 123)
+        expect(disabled).toBe(false)
+
+    describe "when on_demand is true", ->
+      it "is not editable", ->
+        scope.variantOverrides[123][2] = {on_demand: true, count_on_hand: null}
+        disabled = scope.countOnHandDisabled(variant, 123)
+        expect(disabled).toBe(true)
+
+    describe "when on_demand is true but count on hand is filled", ->
+      it "is editable", ->
+        scope.variantOverrides[123][2] = {on_demand: true, count_on_hand: 123}
+        disabled = scope.countOnHandDisabled(variant, 123)
+        expect(disabled).toBe(false)
+
   describe "count on hand placeholder", ->
     beforeEach ->
       scope.variantOverrides = {123: {}}

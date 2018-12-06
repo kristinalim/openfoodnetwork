@@ -111,6 +111,15 @@ angular.module("admin.variantOverrides").controller "AdminVariantOverridesCtrl",
       .error (data, status) ->
         $timeout -> StatusMessage.display 'failure', $scope.updateError(data, status)
 
+  # Variant override count_on_hand field can be filled when:
+  #     on_demand false      -- User is expected to set count_on_hand
+  #     count_on_hand is set -- Old behaviour of the page allows count_on_hand to be set even when
+  #                             on_demand is true or nil. We should allow the user to change or
+  #                             clear the existing value.
+  $scope.countOnHandDisabled = (variant, hubId) ->
+    variantOverride = $scope.variantOverrides[hubId][variant.id]
+    variantOverride.on_demand != false && !variantOverride.count_on_hand?
+
   # Variant override count_on_hand field placeholder logic:
   #     on_demand true  -- Show "On Demand"
   #     on_demand false -- Show empty value to be set by the user
