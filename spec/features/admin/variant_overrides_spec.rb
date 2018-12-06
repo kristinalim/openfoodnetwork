@@ -365,6 +365,28 @@ feature %q{
               expect(vo.count_on_hand).to be_nil
               expect(vo.on_demand).to be_nil
             end
+
+            describe "for existing records where count on hand is set but on_demand expects it to be blank (yes or use_producer_settings)" do
+              let!(:vo) { create(:variant_override, variant: variant, hub: hub, on_demand: true, count_on_hand: 11111) }
+
+              it "switches record to limited stock" do
+                # It sets on_demand to false when count_on_hand is changed.
+                fill_in "variant-overrides-#{variant.id}-count_on_hand", with: "200"
+                expect(page).to have_select "variant-overrides-#{variant.id}-on_demand", selected: I18n.t("js.variant_overrides.on_demand.no")
+
+                # It clears and disables count_on_hand when selecting nil on_demand.
+                select_on_demand variant, :use_producer_settings
+                expect(page).to have_input "variant-overrides-#{variant.id}-count_on_hand", with: "", disabled: false
+
+                # It saves the changes.
+                click_button I18n.t("save_changes")
+                expect(page).to have_content I18n.t("js.changes_saved")
+
+                vo.reload
+                expect(vo.count_on_hand).to be_nil
+                expect(vo.on_demand).to be_nil
+              end
+            end
           end
         end
       end

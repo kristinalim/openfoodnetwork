@@ -111,6 +111,14 @@ angular.module("admin.variantOverrides").controller "AdminVariantOverridesCtrl",
       .error (data, status) ->
         $timeout -> StatusMessage.display 'failure', $scope.updateError(data, status)
 
+  # Callback method for when count_on_hand is changed. If count_on_hand is still filled, set
+  # on_demand to false.
+  $scope.selectLimitedStockIfCountOnHandFilled = (variant, hubId) ->
+    variantOverride = $scope.variantOverrides[hubId][variant.id]
+    if variantOverride.count_on_hand? && variantOverride.count_on_hand != '' && variantOverride.on_demand != false
+      variantOverride.on_demand = false
+      DirtyVariantOverrides.set hubId, variant.id, variantOverride.id, 'on_demand', false
+
   # Variant override count_on_hand field can be filled when:
   #     on_demand false      -- User is expected to set count_on_hand
   #     count_on_hand is set -- Old behaviour of the page allows count_on_hand to be set even when

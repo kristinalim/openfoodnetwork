@@ -152,6 +152,37 @@ describe "VariantOverridesCtrl", ->
         dirtyVariantOverride = DirtyVariantOverrides.dirtyVariantOverrides[123][2]
         expect(dirtyVariantOverride.count_on_hand).toBe(20)
 
+    describe "changing to limited stock when count on hand is set", ->
+      beforeEach ->
+        scope.variantOverrides = {123: {2: {id: 5, on_demand: true}}}
+        variant = {id: 2}
+
+      describe "when count on hand is set", ->
+        beforeEach ->
+          scope.variantOverrides[123][2].count_on_hand = 1
+
+        it "changes to limited stock and registers dirty attribute", ->
+          scope.selectLimitedStockIfCountOnHandFilled(variant, 123)
+          expect(scope.variantOverrides[123][2].on_demand).toBe(false)
+          dirtyVariantOverride = DirtyVariantOverrides.dirtyVariantOverrides[123][2]
+          expect(dirtyVariantOverride.on_demand).toBe(false)
+
+      describe "when count on hand is null", ->
+        beforeEach ->
+          scope.variantOverrides[123][2].count_on_hand = null
+
+        it "does not change to limited stock", ->
+          scope.selectLimitedStockIfCountOnHandFilled(variant, 123)
+          expect(scope.variantOverrides[123][2].on_demand).toBe(true)
+
+      describe "when count on hand is blank string", ->
+        beforeEach ->
+          scope.variantOverrides[123][2].count_on_hand = ''
+
+        it "does not change to limited stock", ->
+          scope.selectLimitedStockIfCountOnHandFilled(variant, 123)
+          expect(scope.variantOverrides[123][2].on_demand).toBe(true)
+
   describe "disabling of count on hand field", ->
     variant = {id: 2}
 
