@@ -1652,7 +1652,6 @@ sv:
   enterprise_fee_by: "%{type} avgift vid %{role} %{enterprise_name}"
   validation_msg_relationship_already_established: "^Den förbindelsen är redan upprättad."
   validation_msg_at_least_one_hub: "^Åtminstone ett matställe måste väljas"
-  validation_msg_product_category_cant_be_blank: "^Produktkategori kan inte vara blank"
   validation_msg_tax_category_cant_be_blank: "^Skattekategori kan inte vara blank"
   validation_msg_is_associated_with_an_exising_customer: "är knuten till en existerande kund"
   content_configuration_pricing_table: "(TODO: Pristabell)"

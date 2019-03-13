@@ -11,6 +11,8 @@ es:
         email: E-mail del consumidor
       spree/payment:
         amount: Cantidad
+      spree/product:
+        primary_taxon: categoría del producto
       order_cycle:
         orders_close_at: Fecha de cierre
     errors:
@@ -2246,8 +2248,6 @@ es:
   enterprise_fee_by: "%{type} comisión por %{role} %{enterprise_name}"
   validation_msg_relationship_already_established: "^Esta relación ya existe."
   validation_msg_at_least_one_hub: "^Al menos se debe seleccionar un grupo de consumo"
-  validation_msg_product_category_cant_be_blank: "^La Categoría del Producto no puede estar en vacía"
-  validation_msg_tax: "^ Se requiere categoría de impuestos"
   validation_msg_tax_category_cant_be_blank: "^La Categoría del Impuesto no puede estar vacía"
   validation_msg_is_associated_with_an_exising_customer: "Está asociado con un consumidor existente"
   content_configuration_pricing_table: "(TODO: tabla de precios)"

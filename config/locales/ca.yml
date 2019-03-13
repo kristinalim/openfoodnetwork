@@ -11,6 +11,8 @@ ca:
         email: Correu electrònic de la consumidora
       spree/payment:
         amount: Import
+      spree/product:
+        primary_taxon: Categoria del producte
       order_cycle:
         orders_close_at: Data de tancament
     errors:
@@ -2246,8 +2248,6 @@ ca:
   enterprise_fee_by: "Comissió %{type} per %{role} %{enterprise_name}"
   validation_msg_relationship_already_established: "^ Aquesta relació ja està establerta."
   validation_msg_at_least_one_hub: "^ Cal seleccionar com a mínim un grup"
-  validation_msg_product_category_cant_be_blank: "^ La categoria de producte no pot estar en blanc"
-  validation_msg_tax: "^ La categoria d'impostos és obligatòria"
   validation_msg_tax_category_cant_be_blank: "^ La categoria d'impostos no es pot deixar en blanc"
   validation_msg_is_associated_with_an_exising_customer: "Està associada amb una consumidora existent"
   content_configuration_pricing_table: "(TODO: Taula de preus)"

@@ -11,6 +11,8 @@ it:
         email: Mail consumatore
       spree/payment:
         amount: Quantità
+      spree/product:
+        primary_taxon: Categoria prodotto
       order_cycle:
         orders_close_at: Data chiusura
     errors:
@@ -2178,8 +2180,6 @@ it:
   enterprise_fee_by: "%{type} tariffa da %{role} %{enterprise_name}"
   validation_msg_relationship_already_established: "^Questa relazione è già stabilita."
   validation_msg_at_least_one_hub: "^Almeno un hub deve essere selezionato"
-  validation_msg_product_category_cant_be_blank: "^Categoria di prodotto non può essere vuoto"
-  validation_msg_tax: "^Categoria d'imposta richiesta"
   validation_msg_tax_category_cant_be_blank: "^Categoria di tassa non può essere vuoto"
   validation_msg_is_associated_with_an_exising_customer: "è associato con un cliente esistente"
   content_configuration_pricing_table: "(TODO: tabella dei prezzi)"
