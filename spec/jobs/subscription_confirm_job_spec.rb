@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-xdescribe SubscriptionConfirmJob do
+describe SubscriptionConfirmJob do
   include OpenFoodNetwork::EmailHelper
 
   let(:job) { SubscriptionConfirmJob.new }
@@ -119,7 +119,7 @@ xdescribe SubscriptionConfirmJob do
     let(:order) { proxy_order.initialise_order! }
 
     before do
-      while !order.completed? do break unless order.next! end
+      AdvanceOrderService.new(order).call!
       allow(job).to receive(:send_confirm_email).and_call_original
       job.instance_variable_set(:@order, order)
       setup_email
