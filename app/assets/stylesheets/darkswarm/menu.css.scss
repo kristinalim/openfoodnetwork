@@ -140,6 +140,10 @@ nav.top-bar {
 
 .tab-bar {
   background-color: white;
+  height: 2.8em;
+  position: fixed;
+  width: 100%;
+  z-index: 1;
 
   .cart-span {
     background-color: #f4704c;
