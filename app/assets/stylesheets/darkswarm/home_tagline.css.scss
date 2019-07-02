@@ -24,8 +24,6 @@
   }
 
   h1 {
-    margin-top: $topbar-height;
-
     @media all and (min-width: 768px) {
       margin-top: 10rem;
     }
