@@ -362,6 +362,20 @@ feature '
 
         expect(page.find("td.amount")).to have_content "$5.00"
       end
+
+      context "when an included variant has been deleted" do
+        before do
+          @deleted_variant = @order.line_items.first.variant
+          @deleted_variant.delete
+
+          visit spree.edit_admin_order_path(@order)
+        end
+
+        it "still loads the edit order page with variant details" do
+          expect(@order.shipment).to be_present
+          expect(page).to have_content @deleted_variant.product.name
+        end
+      end
     end
 
     scenario "creating an order with distributor and order cycle" do
