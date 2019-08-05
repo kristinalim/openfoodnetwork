@@ -44,7 +44,7 @@ module OpenFoodNetwork
       def move(quantity, originator = nil)
         if @variant_override.andand.stock_overridden?
           @variant_override.move_stock! quantity
-        else
+        elsif @variant_voerride.andand.use_producer_stock_settings?
           super
         end
       end
