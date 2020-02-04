@@ -370,12 +370,7 @@ feature '
         find(:css, "tags-input .tags input").set "wholesale\n"
       end
 
-      exchange_rows = page.all("table.exchanges tbody")
-      exchange_rows.each do |exchange_row|
-        exchange_row.find("td.products").click
-        # Wait for the products panel to be visible.
-        expect(exchange_row).to have_selector "tr", count: 2
-      end
+      page.all("table.exchanges tr.distributor td.products").each(&:click)
 
       uncheck "order_cycle_outgoing_exchange_2_variants_#{v1.id}"
       check "order_cycle_outgoing_exchange_2_variants_#{v2.id}"
