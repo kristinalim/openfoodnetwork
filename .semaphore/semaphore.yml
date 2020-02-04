@@ -1,0 +1,31 @@
+version: v1.0
+name: Test MyApp
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: RSpec - Flakey
+    task:
+      env_vars:
+        - name: OFN_DB_HOST
+          value: "localhost"
+        - name: OFN_DB_USERNAME
+          value: "postgres"
+        - name: OFN_DB_PASSWORD
+          value: ""
+        - name: RAILS_ENV
+          value: test
+      jobs:
+        - name: Test "focus" examples 100 times
+          commands:
+            - checkout
+            - sem-service start postgres 11
+            - sem-version ruby 2.6.5
+            - cache restore
+            - bundle install --deployment --path vendor/bundle
+            - cp config/application.yml.example config/application.yml
+            - bundle exec rake db:create
+            - export RAILS_ENV=test
+            - RAILS_ENV=test bundle exec rake db:create db:schema:load
+            - bundle exec rspec -t focus
