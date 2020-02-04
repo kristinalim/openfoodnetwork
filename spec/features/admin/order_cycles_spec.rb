@@ -276,6 +276,7 @@ feature '
       expect(exchange.tag_list).to eq(['wholesale'])
     end
 
+    100.times do
     scenario "updating an order cycle", js: true, focus: true do
       # Given an order cycle with all the settings
       oc = create(:order_cycle)
@@ -422,6 +423,7 @@ feature '
       # And the collection details should have been updated
       expect(oc.exchanges.where(pickup_time: 'New time 0', pickup_instructions: 'New instructions 0')).to be_present
       expect(oc.exchanges.where(pickup_time: 'New time 1', pickup_instructions: 'New instructions 1')).to be_present
+    end
     end
   end
 
