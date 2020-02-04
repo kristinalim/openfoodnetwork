@@ -276,7 +276,7 @@ feature '
       expect(exchange.tag_list).to eq(['wholesale'])
     end
 
-    scenario "updating an order cycle", js: true do
+    scenario "updating an order cycle", js: true, focus: true do
       # Given an order cycle with all the settings
       oc = create(:order_cycle)
       initial_variants = oc.variants.sort_by(&:id)
